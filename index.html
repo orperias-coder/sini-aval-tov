@@ -105,6 +105,47 @@
     background:linear-gradient(180deg,rgba(245,241,232,0),var(--paper) 40%)}
   .cta button{width:100%;border:none;background:var(--seal);color:#fff;border-radius:15px;padding:16px;font-weight:900;font-size:17.5px;box-shadow:0 8px 24px rgba(194,47,32,.38)}
   .cta .sub{text-align:center;color:var(--muted);font-size:10.5px;margin-top:5px}
+
+  /* ===== מסך רחב: פריסת-מחשב אמיתית ===== */
+  @media (min-width:768px){
+    .phone{max-width:1040px;padding-bottom:56px}
+    .top{padding:20px 30px 18px;gap:14px}
+    .top .stamp{width:54px;height:54px;font-size:11px;border-radius:11px}
+    .top .brand{font-size:23px}
+    .top .tag{font-size:12.5px}
+    .top .back{font-size:14px}
+    .promise{font-size:14px;padding:0 30px 20px}
+    .search{max-width:580px;margin:22px auto 8px}
+    .search input{padding:14px 18px;font-size:16px}
+    .catbar{flex-wrap:wrap;overflow:visible;justify-content:center;padding:6px 24px 2px;gap:10px}
+    .cchip{font-size:14px;padding:8px 18px}
+    h3.sec{font-size:20px;margin:30px 26px 16px}
+    .grid{grid-template-columns:repeat(3,1fr);gap:20px;padding:0 26px}
+    .rc .im{height:190px}
+    .rc .b{padding:13px 15px}
+    .rc .b .t{font-size:15.5px}
+    .rc .b .pun{font-size:12.5px}
+    .rc .b .p{font-size:17px}
+    .foot{font-size:12.5px;margin-top:44px;padding:24px}
+
+    /* דף-מוצר: שתי עמודות — גלריה | פרטים */
+    .pcols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:30px;align-items:start;padding:10px 26px 0}
+    .pmedia{position:sticky;top:20px}
+    .hero{border-radius:20px;padding:14px 16px 18px;margin:0}
+    .hero .shot{height:360px}
+    .hero h1{font-size:26px}
+    .pinfo{display:flex;flex-direction:column;gap:16px}
+    .pinfo>*{margin:0 !important}
+    .cta{position:static;max-width:none;margin:0;padding:0;background:none;z-index:auto}
+    .cta button{padding:17px;font-size:18px}
+    .cta .sub{margin-top:8px}
+    .rel{grid-template-columns:repeat(4,1fr);margin:22px 26px 0}
+    .disc{margin:24px 26px 0}
+  }
+  @media (min-width:1120px){
+    .phone{max-width:1160px}
+    .grid{grid-template-columns:repeat(4,1fr)}
+  }
 </style>
 </head>
 <body>
@@ -250,27 +291,34 @@ function renderProduct(p){
 
   const thumbs = items.length > 1 ? `<div class="thumbs" id="thumbs">${items.map((it, i) => `<button type="button" class="th${it.type === 'video' ? ' vid' : ''}${i === 0 ? ' on' : ''}" data-i="${i}">${it.type === 'image' ? `<img src="${esc(it.src)}" alt="">` : ''}</button>`).join('')}</div>` : '';
 
+  const ctaHtml = `<div class="cta"><button type="button" id="cta-btn">${esc(ctaText(p))}</button><div class="sub">נפתח באתר המקור · הקישור של אור</div></div>`;
   el('app').innerHTML = `
     <div class="phone">
       ${brandHeader(true)}
-      <div class="hero">
-        <div class="shot">
-          <span class="badge${tested ? '' : ' c'}">${tested ? 'נבדק בשטח ✓' : 'בבדיקה עכשיו'}</span>
-          <div class="main" id="hero-main"></div>
-          <span class="mine" id="hero-credit" style="display:none">צולם על-ידי · אור</span>
+      <div class="pcols">
+        <div class="pmedia">
+          <div class="hero">
+            <div class="shot">
+              <span class="badge${tested ? '' : ' c'}">${tested ? 'נבדק בשטח ✓' : 'בבדיקה עכשיו'}</span>
+              <div class="main" id="hero-main"></div>
+              <span class="mine" id="hero-credit" style="display:none">צולם על-ידי · אור</span>
+            </div>
+            ${thumbs}
+            <h1>${esc(p.title)}</h1>
+            ${p.punchline ? `<div class="punch">${esc(p.punchline)}</div>` : ''}
+          </div>
         </div>
-        ${thumbs}
-        <h1>${esc(p.title)}</h1>
-        ${p.punchline ? `<div class="punch">${esc(p.punchline)}</div>` : ''}
+        <div class="pinfo">
+          ${buyCard}
+          ${testCard}
+          ${candBox}
+          ${prosCons}
+          ${ctaHtml}
+        </div>
       </div>
-      ${buyCard}
-      ${testCard}
-      ${candBox}
-      ${prosCons}
       ${relBlock}
       <div class="disc">גילוי נאות: הקישורים באתר הם קישורי-שותפים — אם קונים דרכם, אני מקבל עמלה קטנה. זה לא עולה לכם שקל, וזה מה שמחזיק את האתר. אני ממליץ רק על מה שבדקתי בעצמי או שנראה לי שווה בדיקה.</div>
-    </div>
-    <div class="cta"><button type="button" id="cta-btn">${esc(ctaText(p))}</button><div class="sub">נפתח באתר המקור · הקישור של אור</div></div>`;
+    </div>`;
 
   el('go-home').addEventListener('click', () => { location.hash = ''; });
   setHero(items, 0);
