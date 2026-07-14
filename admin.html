@@ -107,6 +107,18 @@
   .media .cell img,.media .cell video{width:100%;height:100%;object-fit:cover}
   .media .cell .rm{position:absolute;top:-7px;inset-inline-end:-7px;width:22px;height:22px;border-radius:50%;background:var(--coal);color:#fff;border:2px solid var(--paper);display:grid;place-items:center;font-size:12px;font-weight:900;line-height:1}
   .media .cell .vtag{position:absolute;bottom:3px;inset-inline-start:3px;background:rgba(0,0,0,.7);color:#fff;font-size:8px;font-weight:800;padding:1px 5px;border-radius:4px}
+  .media .cell.pending{display:grid;place-items:center}
+  .spin{width:22px;height:22px;border-radius:50%;border:3px solid rgba(242,179,44,.3);border-top-color:var(--hazard);animation:spin .7s linear infinite}
+  @keyframes spin{100%{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+  /* באנר-שחזור טיוטה */
+  .restore{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    background:rgba(242,179,44,.14);border:1px solid rgba(242,179,44,.5);border-radius:12px;
+    padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:700;color:#8a6a1f}
+  .restore .ra{display:flex;gap:6px}
+  .restore button{border:none;border-radius:9px;padding:6px 14px;font-weight:800;font-size:12.5px;font-family:inherit}
+  .restore #rest-yes{background:var(--seal);color:#fff}
+  .restore #rest-no{background:rgba(0,0,0,.08);color:var(--muted)}
   .save{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
   .save .primary{flex:1.6;min-width:130px;border:none;background:var(--seal);color:#fff;border-radius:14px;padding:14px;font-weight:900;font-size:16px;box-shadow:0 6px 18px rgba(194,47,32,.28)}
   .save .ghost{flex:1;min-width:96px;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:14px;font-weight:800;font-size:14px;padding:14px 6px}
@@ -260,7 +272,7 @@ const CATEGORIES = ['כלים חשמליים','כלי-יד','מדידה וליי
 let draft = null;
 function emptyProduct(){ return { title:'', marketplace:'ali', source_url:'', affiliate_url:'',
   price_approx:null, price_israel:null, currency:'ILS', category:CATEGORIES[0], tier:'tested',
-  punchline:'', verdict:'', test_note:'',
+  punchline:'', verdict:'', test_note:'', test_date:null,
   scores:[{label:'כוח',value:null},{label:'סוללה',value:null},{label:'גימור ואחיזה',value:null},{label:'שווה-למחיר',value:null}],
   pros:[], cons:[], external_images:[], my_media:[], video_url:null, cta_text:'', status:'draft' }; }
 
@@ -299,22 +311,40 @@ async function compressImage(file, max = 1600){
   c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
   return new Promise(r => c.toBlob(r, 'image/jpeg', .85));
 }
+let uploading = 0;
+function updatePublishLock(){
+  const pub = el('btn-publish'), dr = el('btn-draft');
+  const busy = uploading > 0;
+  if (pub) { pub.disabled = busy; pub.textContent = busy ? 'מעלה תמונות…' : 'פרסם לאתר'; }
+  if (dr) dr.disabled = busy;
+}
 async function addMedia(files){
   for (const f of files) {
     if (f.size > 60 * 1024 * 1024) { toast('קובץ גדול מדי (מעל 60MB).'); continue; }
     const isVideo = f.type.startsWith('video/');
-    const blob = isVideo ? f : await compressImage(f);
-    const path = `products/${crypto.randomUUID()}${isVideo ? '.mp4' : '.jpg'}`;
-    const { error } = await sb.storage.from('media').upload(path, blob, { contentType: isVideo ? f.type : 'image/jpeg' });
-    if (error) { toast('ההעלאה נכשלה. נסה שוב.'); continue; }
-    draft.my_media.push({ path, type: isVideo ? 'video' : 'image', caption: '' });
+    const ph = { path: null, type: isVideo ? 'video' : 'image', caption: '', pending: true };
+    draft.my_media.push(ph);
+    uploading++; updatePublishLock(); renderMedia();
+    try {
+      const blob = isVideo ? f : await compressImage(f);
+      const path = `products/${crypto.randomUUID()}${isVideo ? '.mp4' : '.jpg'}`;
+      const { error } = await sb.storage.from('media').upload(path, blob, { contentType: isVideo ? f.type : 'image/jpeg' });
+      if (error) throw error;
+      ph.path = path; delete ph.pending;
+    } catch (e) {
+      const i = draft.my_media.indexOf(ph);
+      if (i > -1) draft.my_media.splice(i, 1);
+      toast(isVideo ? 'העלאת הסרטון נכשלה. נסה שוב.' : 'העלאת התמונה נכשלה (אולי פורמט לא נתמך). נסה שוב.');
+    } finally {
+      uploading--; updatePublishLock(); renderMedia(); scheduleAutosave();
+    }
   }
-  renderMedia();
 }
 function renderMedia(){
   const box = el('f-media'); if (!box) return;
   box.innerHTML = `<button type="button" class="add" id="media-add">+</button>` +
     draft.my_media.map((m, i) => {
+      if (m.pending) return `<div class="cell pending"><span class="spin"></span></div>`;
       const u = mediaUrl(m.path);
       const inner = m.type === 'video'
         ? `<video src="${esc(u)}#t=0.1" muted playsinline></video><span class="vtag">סרטון</span>`
@@ -323,7 +353,7 @@ function renderMedia(){
     }).join('');
   el('media-add').addEventListener('click', () => el('f-file').click());
   box.querySelectorAll('.rm').forEach(b => b.addEventListener('click', () => {
-    draft.my_media.splice(Number(b.dataset.i), 1); renderMedia();
+    draft.my_media.splice(Number(b.dataset.i), 1); renderMedia(); scheduleAutosave();
   }));
 }
 
@@ -365,6 +395,9 @@ function renderEdit(banner){
 
       <div class="lbl">כמה זמן ואיפה בדקת?</div>
       <input id="f-testnote" class="in" placeholder="למשל: 3 חודשים על גגות." value="${esc(p.test_note)}">
+
+      <div class="lbl">מתי בדקת? (מופיע בכרטיס: "נבדק · חודש שנה")</div>
+      <input id="f-testdate" class="in" type="date" value="${esc(p.test_date || '')}">
 
       <div class="lbl">בכמה נתקלת בארץ?</div>
       <div class="two">
@@ -422,6 +455,8 @@ function renderEdit(banner){
 }
 // ===== איסוף, שמירה ופרסום =====
 const numOrNull = v => { const t = String(v ?? '').trim(); return t === '' ? null : Number(t); };
+const isValidUrl = u => { try { return /^https?:$/.test(new URL(u).protocol); } catch { return false; } };
+let saving = false;
 // מחזיר את כל שדות emptyProduct כשהם נקראים מה-DOM (טקסטים) ומ-draft (מדיה/מטא).
 // לעולם לא: id, clicks, created_at, status, published_at — בהם מטפלת save().
 function collectForm(){
@@ -447,31 +482,44 @@ function collectForm(){
     punchline: el('f-punch').value.trim(),
     verdict: el('f-verdict').value.trim(),
     test_note: el('f-testnote').value.trim(),
+    test_date: el('f-testdate') ? (el('f-testdate').value || null) : (draft.test_date || null),
     scores,
     pros: lines('f-pros'),
     cons: lines('f-cons'),
     external_images: draft.external_images,
-    my_media: draft.my_media,
+    my_media: draft.my_media.filter(m => m.path),   // בלי פריטים שעדיין בהעלאה
     video_url: draft.video_url,
     cta_text: el('f-cta').value.trim(),
   };
 }
 async function save(publish){
+  if (saving) return;                                   // מונע כפילות מדאבל-טאפ
+  if (uploading > 0) return toast('רגע — עוד מעלה תמונות. נסה שוב כשזה נגמר.');
   const p = collectForm();
   if (publish && !p.title.trim()) return toast('חסר שם מוצר.');
   if (publish && !p.affiliate_url.trim()) return toast('חסר קישור.');
+  if (publish && !isValidUrl(p.affiliate_url)) return toast('הקישור לא תקין — צריך להתחיל ב-https://');
   if (publish && p.tier === 'tested' && (!p.verdict.trim() || !p.my_media.some(m => m.type === 'image')))
     return toast("כדי לפרסם 'נבדק על-ידי אור' צריך: חוות-דעת + לפחות צילום אחד שלך.");
+  saving = true;
+  document.querySelectorAll('.save button').forEach(b => b.disabled = true);
   p.status = publish ? 'published' : 'draft';
   p.updated_at = new Date().toISOString();
   if (publish && !draft.published_at) p.published_at = p.updated_at;
-  let q;
-  if (draft.id) q = await sb.from('products').update(p).eq('id', draft.id).select().single();
-  else q = await sb.from('products').insert(p).select().single();
-  if (q.error) { console.error(q.error); return toast('השמירה נכשלה — בדוק אינטרנט ונסה שוב.'); }
-  draft = q.data;
-  toast(publish ? 'עלה לאתר.' : 'נשמר.');
-  await loadProducts();
+  try {
+    let q;
+    if (draft.id) q = await sb.from('products').update(p).eq('id', draft.id).select().single();
+    else q = await sb.from('products').insert(p).select().single();
+    if (q.error) { console.error(q.error); toast('השמירה נכשלה — בדוק אינטרנט ונסה שוב.'); return; }
+    draft = q.data;
+    clearAutosave();
+    toast(publish ? 'עלה לאתר.' : 'נשמר.');
+    await loadProducts();
+    renderEdit(null);   // רה-רנדר: מציג "הכן להרצה" ומחבר את wireRun ל-draft העדכני
+  } finally {
+    saving = false;
+    document.querySelectorAll('.save button').forEach(b => b.disabled = false);
+  }
 }
 function wireSaveButtons(){
   el('btn-publish').addEventListener('click', () => save(true));
@@ -479,7 +527,48 @@ function wireSaveButtons(){
   const un = el('btn-unpublish'); if (un) un.addEventListener('click', () => save(false));
 }
 
+// ===== שמירת-טיוטה אוטומטית — מגן מאובדן-עבודה ברענון/סגירת-טאב =====
+const AUTOSAVE_KEY = 'sini_draft_v1';
+let dirty = false, autosaveT;
+function scheduleAutosave(){
+  if (!el('f-title')) return;                 // רק כשטופס-העריכה על המסך
+  dirty = true;
+  clearTimeout(autosaveT);
+  autosaveT = setTimeout(() => {
+    try {
+      const snap = { ...collectForm(), id: draft.id || null, published_at: draft.published_at || null, _ts: Date.now() };
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(snap));
+    } catch {}
+  }, 500);
+}
+function clearAutosave(){ dirty = false; clearTimeout(autosaveT); try { localStorage.removeItem(AUTOSAVE_KEY); } catch {} }
+function loadAutosave(){ try { const s = localStorage.getItem(AUTOSAVE_KEY); return s ? JSON.parse(s) : null; } catch { return null; } }
+function maybeOfferRestore(){
+  const snap = loadAutosave();
+  if (!snap) return;
+  const hasContent = (snap.title && snap.title.trim()) || snap.affiliate_url || (snap.my_media && snap.my_media.length);
+  const fresh = snap._ts && (Date.now() - snap._ts) < 1000 * 60 * 60 * 24;   // עד 24 שעות
+  if (!hasContent || !fresh) return clearAutosave();
+  const host = document.querySelector('#v-list .pad'); if (!host) return;
+  if (host.querySelector('.restore')) return;
+  const bar = document.createElement('div');
+  bar.className = 'restore';
+  bar.innerHTML = `<span>יש טיוטה שלא נשמרה מהפעם הקודמת.</span>
+    <span class="ra"><button type="button" id="rest-yes">שחזר</button><button type="button" id="rest-no">מחק</button></span>`;
+  host.insertBefore(bar, host.firstChild);
+  el('rest-yes').addEventListener('click', () => {
+    draft = { ...emptyProduct(), ...snap };
+    bar.remove(); renderEdit('שוחזרה טיוטה שלא נשמרה — בדוק ושמור.'); show('edit');
+  });
+  el('rest-no').addEventListener('click', () => { clearAutosave(); bar.remove(); });
+}
+
 // ===== "הכן להרצה" — שלושה תוצרים לשיתוף =====
+// כתובת-האתר החי. השיתוף מפנה לדף-המוצר (לא ללינק-השותפים הגולמי): כדי שהנמען יפגוש
+// את מבחן-השטח וההשוואה, שהקליק יימדד (?src=), ושתצוגת-הלינק בוואטסאפ תציג את המותג.
+const SITE = 'https://orperias-coder.github.io/sini-aval-tov/';
+const DISCLOSURE = 'שקיפות: קישור-שותפים — קנייה דרכו מזכה אותי בעמלה קטנה, בלי תוספת מחיר לכם.';
+const productLink = (p, src) => `${SITE}#p/${p.id}?src=${src}`;
 function waMessage(p){
   const lines = ['מצאתי משהו ששווה שתדעו עליו:'];
   let l = `*${p.title}*`;
@@ -490,7 +579,7 @@ function waMessage(p){
   lines.push(p.tier === 'tested'
     ? (p.verdict ? `בדקתי בעצמי: ${p.verdict}` : 'בדקתי בעצמי.')
     : 'עוד בבדיקה אצלי — נראה שווה, רציתי שתדעו שזה קיים.');
-  lines.push('סיני אבל טוב ✓', p.affiliate_url);
+  lines.push('סיני אבל טוב ✓', productLink(p, 'wa'), DISCLOSURE);
   return lines.join('\n');
 }
 async function copyText(t){ await navigator.clipboard.writeText(t); toast('הועתק.'); }
@@ -562,7 +651,7 @@ function fbPost(p){
   if (p.cons.length) rows.push('שווה לדעת:', ...p.cons.map(v => '- ' + v));
   rows.push('');
   if (p.price_approx) rows.push(`מחיר משוער: ₪${Math.round(p.price_approx)}${p.price_israel ? ` (בחנות בארץ ₪${Math.round(p.price_israel)}+)` : ''}`);
-  rows.push(p.affiliate_url, '', 'שקיפות: זה קישור-שותפים שלי — אם קונים דרכו אני מקבל עמלה קטנה, לכם זה לא עולה כלום.');
+  rows.push(productLink(p, 'fb'), '', 'שקיפות: זה קישור-שותפים שלי — אם קונים דרכו אני מקבל עמלה קטנה, לכם זה לא עולה כלום.');
   return rows.join('\n');
 }
 function wireRun(p){
@@ -579,16 +668,20 @@ el('login-btn').addEventListener('click', async () => {
   const { error } = await sb.auth.signInWithPassword({ email: el('login-email').value.trim(), password: el('login-pass').value });
   btn.disabled = false;
   if (error) return toast('פרטים לא נכונים. נסה שוב.');
-  await loadProducts(); show('list');
+  await loadProducts(); show('list'); maybeOfferRestore();
 });
 el('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') el('login-btn').click(); });
 
 el('logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); show('login'); });
 el('edit-back').addEventListener('click', () => show('list'));
 
+// autosave: כל הקלדה בטופס-העריכה נשמרת מקומית; אזהרה לפני יציאה עם שינויים לא-שמורים
+el('edit-body').addEventListener('input', scheduleAutosave);
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
 async function init(){
   const { data: { session } } = await sb.auth.getSession();
-  if (session) { await loadProducts(); show('list'); } else show('login');
+  if (session) { await loadProducts(); show('list'); maybeOfferRestore(); } else show('login');
 }
 init();
 </script>
