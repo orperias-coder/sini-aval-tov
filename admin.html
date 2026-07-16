@@ -51,6 +51,13 @@
   .paste button{border:none;background:var(--seal);color:#fff;border-radius:11px;padding:0 18px;font-weight:800;font-size:14px}
   .paste button:disabled{opacity:.55}
   .paste .hint{font-size:11.5px;color:var(--muted);margin-top:7px}
+  /* ייבוא מרובה */
+  .import{margin-bottom:14px}
+  .imp-toggle{width:100%;border:1px dashed var(--line);background:#fff;color:var(--muted);border-radius:12px;padding:10px;font-weight:800;font-size:13px;font-family:inherit}
+  .imp-body{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .imp-body textarea{width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;direction:ltr;text-align:left;font-family:ui-monospace,Menlo,monospace;color:var(--ink);background:#fff}
+  .imp-body .imp-run{margin-top:10px;width:100%;border:none;background:var(--seal);color:#fff;border-radius:11px;padding:12px;font-weight:900;font-size:14px;font-family:inherit}
+  .imp-body .imp-run:disabled{opacity:.55}
   .lcontrols{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
   .lchip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 13px;font-size:12.5px;font-weight:700;color:var(--muted)}
   .lchip.on{background:var(--coal);border-color:var(--coal);color:#fff}
@@ -188,6 +195,13 @@
         </div>
         <div class="hint">עלי-אקספרס או אמזון · הדבק את קישור-השותפים שלך</div>
       </div>
+      <div class="import">
+        <button type="button" class="imp-toggle" id="imp-toggle">＋ ייבוא מרובה — הדבק רשימה שקלוד הכין</button>
+        <div class="imp-body" id="imp-body" hidden>
+          <textarea id="imp-json" dir="ltr" placeholder="[ ...הדבק כאן את רשימת-המוצרים... ]"></textarea>
+          <button type="button" class="imp-run" id="imp-run">העלה הכול כטיוטות</button>
+        </div>
+      </div>
       <div id="list-rows"><!-- רשימת המוצרים (S14) --></div>
     </div>
   </div>
@@ -220,6 +234,24 @@ async function loadProducts(){
   const { data, error } = await sb.from('products').select('*').order('updated_at', { ascending: false });
   if (error) return toast('טעינה נכשלה — בדוק אינטרנט.');
   PRODUCTS = data; renderList();
+}
+// ייבוא מרובה: מדביקים רשימת-מוצרים (JSON) → כל אחד נכנס כטיוטה. רץ בדפדפן המחובר, בלי טרמינל.
+async function bulkImport(text){
+  let arr;
+  try { arr = JSON.parse(text); } catch { return toast('הטקסט אינו JSON תקין — בדוק שהעתקת הכול.'); }
+  if (!Array.isArray(arr)) arr = [arr];
+  if (!arr.length) return toast('אין מוצרים לייבא.');
+  const now = new Date().toISOString();
+  let ok = 0;
+  for (const p of arr) {
+    const row = { ...emptyProduct(), ...p, status: 'draft', updated_at: now };
+    delete row.id; delete row.published_at; delete row.clicks; delete row.clicks_by_source;
+    const q = await sb.from('products').insert(row).select().single();
+    if (q.error) { console.error(q.error); continue; }
+    ok++;
+  }
+  toast(`נוספו ${ok}/${arr.length} טיוטות.`);
+  await loadProducts();
 }
 function rowImg(p){
   const mi = (p.my_media || []).find(m => m.type === 'image');
@@ -297,6 +329,13 @@ el('paste-btn').addEventListener('click', async () => {
   }
   el('paste-input').value = '';
   show('edit');
+});
+
+el('imp-toggle').addEventListener('click', () => { el('imp-body').hidden = !el('imp-body').hidden; });
+el('imp-run').addEventListener('click', async () => {
+  const btn = el('imp-run'); btn.disabled = true;
+  await bulkImport(el('imp-json').value);
+  btn.disabled = false; el('imp-json').value = '';
 });
 
 // ===== מדיה (הצילומים של אור) =====
