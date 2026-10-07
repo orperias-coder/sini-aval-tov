@@ -26,7 +26,7 @@
 <style>
   :root{
     --coal:#221E19; --coal2:#2E2822; --paper:#F5F1E8; --card:#fff; --ink:#26211C;
-    --muted:#877867; --line:#E6DCCA;
+    --muted:#746656; --line:#E6DCCA;
     --seal:#C22F20; --seal-d:#9C2417; --hazard:#F2B32C; --jade:#2F7D5D; --jade-wash:#E9F3EE;
     --sh:0 1px 3px rgba(38,33,28,.1),0 1px 2px rgba(38,33,28,.06);
   }
@@ -43,7 +43,7 @@
   .stamp{width:50px;height:50px;border:none;border-radius:11px;background:url(mark.png) center/cover no-repeat;font-size:0;color:transparent;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.4)}
   .top .brand{font-weight:900;font-size:18px;letter-spacing:.01em}
   .top .brand em{font-style:normal;color:var(--hazard)}
-  .top .tag{font-size:10.5px;color:#b7ab99;display:block;margin-top:-1px;font-weight:600}
+  .top .tag{font-size:11.5px;color:#b7ab99;display:block;margin-top:-1px;font-weight:600}
   .top .back{margin-inline-start:auto;font-size:12px;font-weight:800;color:#cfc4b2;background:none;border:none;padding:6px}
 
   /* ===== home ===== */
@@ -54,14 +54,16 @@
   .search input:focus{outline:none;border-color:var(--seal)}
   .catbar{display:flex;gap:7px;overflow-x:auto;padding:0 14px 4px;scrollbar-width:none}
   .catbar::-webkit-scrollbar{display:none}
-  .cchip{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 15px;font-size:13px;font-weight:700;color:var(--muted)}
+  .cchip{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 15px;min-height:44px;font-size:13px;font-weight:700;color:var(--muted)}
   .cchip.on{background:var(--coal);border-color:var(--coal);color:#fff}
-  h3.sec{font-size:15px;font-weight:900;margin:18px 18px 10px}
+  .sec{font-size:15px;font-weight:900;margin:18px 18px 10px}
+  .top h1.brand{margin:0;line-height:inherit}
+  .amz{display:block;direction:ltr;unicode-bidi:isolate}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
   .rc{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden;display:block}
-  .rc .im{height:120px;background:linear-gradient(155deg,#453e35,#2c2620);position:relative;display:grid;place-items:center;color:#b7ab99;font-size:10px;font-weight:700}
-  .rc .im img{width:100%;height:100%;object-fit:cover}
-  .rc .im .tg{position:absolute;top:7px;inset-inline-start:7px;font-size:9px;font-weight:900;padding:2px 8px;border-radius:6px;background:var(--seal);color:#fff;transform:rotate(-3deg);z-index:1}
+  .rc .im{height:120px;background:linear-gradient(155deg,#453e35,#2c2620);position:relative;overflow:hidden;display:grid;place-items:center;color:#b7ab99;font-size:10px;font-weight:700}
+  .rc .im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .rc .im .tg{position:absolute;top:7px;inset-inline-start:7px;font-size:10.5px;font-weight:900;padding:2px 8px;border-radius:6px;background:var(--seal);color:#fff;transform:rotate(-3deg);z-index:1}
   .rc .im .tg.c{background:var(--hazard);color:var(--coal)}
   .rc .b{padding:9px 11px}
   .rc .b .t{font-weight:800;font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}
@@ -95,7 +97,7 @@
   .howbox .steps{display:grid;gap:7px}
   .howbox .steps div{font-size:13px;color:var(--ink);padding-inline-start:22px;position:relative}
   .howbox .steps div::before{content:"✓";position:absolute;inset-inline-start:0;color:var(--jade);font-weight:900}
-  .foot{margin-top:26px;padding:16px;color:var(--muted);font-size:11px;text-align:center;line-height:1.7;border-top:1px solid var(--line)}
+  .foot{margin-top:26px;padding:16px;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.7;border-top:1px solid var(--line)}
 
   /* ===== hero מוצר (S17) ===== */
   .hero{background:var(--coal);color:#fff;padding:6px 16px 20px}
@@ -121,7 +123,7 @@
   .buy .was{color:var(--muted);font-size:13px}
   .buy .was b{text-decoration:line-through;font-weight:700}
   .buy .savechip{background:var(--hazard);color:var(--coal);font-weight:900;font-size:11.5px;padding:3px 10px;border-radius:7px;margin-inline-start:auto}
-  .buy .sub{color:var(--muted);font-size:11.5px;margin-top:4px}
+  .buy .sub{color:var(--muted);font-size:12px;margin-top:4px}
 
   .test{background:var(--coal);border-radius:16px;margin:14px;padding:15px 16px;color:#fff}
   .test .t{display:flex;align-items:center;gap:8px;font-weight:900;font-size:14.5px;margin-bottom:3px}
@@ -143,12 +145,12 @@
   .pm .col div{padding:2px 0}
 
   .rel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px}
-  .disc{margin:20px 14px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;color:var(--muted);font-size:11px;line-height:1.6}
+  .disc{margin:20px 14px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;color:var(--muted);font-size:12.5px;line-height:1.6}
 
   .cta{position:fixed;bottom:0;left:0;right:0;max-width:440px;margin:0 auto;padding:10px 14px calc(16px + env(safe-area-inset-bottom));z-index:20;
     background:linear-gradient(180deg,rgba(245,241,232,0),var(--paper) 40%)}
   .cta button{width:100%;border:none;background:var(--seal);color:#fff;border-radius:15px;padding:16px;font-weight:900;font-size:17.5px;box-shadow:0 8px 24px rgba(194,47,32,.38)}
-  .cta .sub{text-align:center;color:var(--muted);font-size:10.5px;margin-top:5px}
+  .cta .sub{text-align:center;color:var(--muted);font-size:12px;margin-top:5px}
 
   /* ===== מסך רחב: פריסת-מחשב אמיתית ===== */
   @media (min-width:768px){
@@ -163,7 +165,7 @@
     .search input{padding:14px 18px;font-size:16px}
     .catbar{flex-wrap:wrap;overflow:visible;justify-content:center;padding:6px 24px 2px;gap:10px}
     .cchip{font-size:14px;padding:8px 18px}
-    h3.sec{font-size:20px;margin:30px 26px 16px}
+    .sec{font-size:20px;margin:30px 26px 16px}
     .grid{grid-template-columns:repeat(3,1fr);gap:20px;padding:0 26px}
     .rc .im{height:190px}
     .rc .b{padding:13px 15px}
@@ -202,7 +204,7 @@
     </div>
     <div class="promise">מזמין, בודק במו-ידיי, ונותן חותמת. רק מה שעובד — נכנס לרשימה.</div>
     <div class="search"><input type="search" placeholder="חפש כלי..." aria-hidden="true" tabindex="-1"></div>
-    <h3 class="sec">נבדקו לאחרונה</h3>
+    <h2 class="sec">נוספו לאחרונה</h2>
     <div class="grid">
       <div class="sk"><div class="im shimmer"></div><div class="b"><div class="ln"></div><div class="ln s"></div></div></div>
       <div class="sk"><div class="im shimmer"></div><div class="b"><div class="ln"></div><div class="ln s"></div></div></div>
@@ -221,6 +223,10 @@ const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 const CATEGORIES = ['כלים חשמליים','כלי-יד','מדידה ולייזר','אחסון וסדר','בטיחות'];
 const HEB_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 const fmtMonth = d => { if (!d) return ''; const dt = new Date(d); return isNaN(dt) ? '' : `${HEB_MONTHS[dt.getMonth()]} ${dt.getFullYear()}`; };
+const isAmazon = p => String(p.marketplace || '').startsWith('amazon');
+// המשפט שתוכנית-השותפים של אמזון מחייבת בכל אתר עם קישורים שלה — הנוסח באנגלית הוא המחייב.
+const AMZ_LINE = '<span class="amz">As an Amazon Associate I earn from qualifying purchases.</span>כשותף של אמזון אני מרוויח מרכישות מזכות.';
+const fmtDay = d => { const m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]}.${+m[2]}.${m[1]}` : ''; };
 const mediaUrl = path => sb.storage.from('media').getPublicUrl(path).data.publicUrl;
 function cardImg(p){
   const mi = (p.my_media || []).find(m => m.type === 'image');
@@ -230,7 +236,7 @@ function cardImg(p){
 const brandHeader = back => `
   <div class="top">
     <div class="stamp">סיני<br>אבל<br>טוב</div>
-    <div><span class="brand">סיני <em>אבל טוב</em></span><span class="tag">כלים שעברו אצלי בשטח. בלי הימורים.</span></div>
+    <div>${back ? '<span class="brand">' : '<h1 class="brand">'}סיני <em>אבל טוב</em>${back ? '</span>' : '</h1>'}<span class="tag">כלים שעברו אצלי בשטח. בלי הימורים.</span></div>
     ${back ? '<button class="back" id="go-home">→ לכל הכלים</button>' : ''}
   </div>`;
 
@@ -238,6 +244,8 @@ let PRODUCTS = [];
 let loadError = false;
 let clickSrc = 'site';   // מקור-התנועה (?src=) — נשמר ונשלח ל-register_click
 async function load(){
+  // הטבלה משותפת לשני האתרים (פיבוט 18.7.2026). הסינון לעלי-אקספרס בלבד מעולם לא עלה לאוויר,
+  // וב-6.10.2026 אור פרסם כאן גם מוצרי-אמזון — לכן מוצג כל מה שמפורסם, עד שיוחלט אחרת.
   const { data, error } = await sb.from('products').select('*').eq('status', 'published')
     .order('published_at', { ascending: false });
   if (error) { loadError = true; renderError(); return; }
@@ -276,12 +284,12 @@ let homeSearch = '', homeCat = 'all';
 function renderHome(){
   const cats = ['all', ...CATEGORIES];
   el('app').innerHTML = `
-    <div class="phone">
+    <main class="phone">
       ${brandHeader(false)}
       <div class="promise">מזמין, בודק במו-ידיי, ונותן חותמת. רק מה שעובד — נכנס לרשימה.</div>
       <div class="search"><input id="q" type="search" aria-label="חיפוש כלי" placeholder="חפש כלי..." value="${esc(homeSearch)}"></div>
       <div class="catbar" id="catbar">${cats.map(c => `<button type="button" class="cchip${homeCat === c ? ' on' : ''}" data-c="${esc(c)}">${c === 'all' ? 'הכל' : esc(c)}</button>`).join('')}</div>
-      <h3 class="sec">נבדקו לאחרונה</h3>
+      <h2 class="sec">נוספו לאחרונה</h2>
       <div class="grid" id="home-grid"></div>
       <div class="howbox">
         <b>איך אני בודק</b>
@@ -292,8 +300,8 @@ function renderHome(){
           <div>רק מה שעובד אצלי מקבל חותמת ונכנס לרשימה.</div>
         </div>
       </div>
-      <div class="foot">הקישורים באתר הם קישורי-שותפים · סיני אבל טוב · הבדיקות של אור</div>
-    </div>`;
+      <div class="foot">הקישורים באתר הם קישורי-שותפים · סיני אבל טוב · הבדיקות של אור${AMZ_LINE}</div>
+    </main>`;
   el('q').addEventListener('input', e => { homeSearch = e.target.value; renderGrid(); });
   el('catbar').querySelectorAll('.cchip').forEach(b => b.addEventListener('click', () => {
     homeCat = b.dataset.c;
@@ -321,7 +329,7 @@ function renderGrid(){
     const img = cardImg(p);
     const tag = p.tier === 'tested' ? '<span class="tg">נבדק ✓</span>' : '<span class="tg c">בבדיקה עכשיו</span>';
     return `<a class="rc" href="#p/${esc(p.id)}">
-      <div class="im">${tag}${img ? `<img src="${esc(img)}" alt="">` : 'אין תמונה'}</div>
+      <div class="im">${tag}${img ? `<img src="${esc(img)}" alt="${esc(p.title)}" referrerpolicy="no-referrer">` : 'אין תמונה'}</div>
       <div class="b">
         <div class="t">${esc(p.title)}</div>
         ${p.punchline ? `<div class="pun">${esc(p.punchline)}</div>` : ''}
@@ -340,14 +348,14 @@ function galleryItems(p){
 }
 function ctaText(p){
   if (p.cta_text && p.cta_text.trim()) return p.cta_text.trim();
-  return p.marketplace === 'amazon' ? 'קח את זה באמזון ←' : 'קח את זה באלי-אקספרס ←';
+  return isAmazon(p) ? 'קח את זה באמזון ←' : 'קח את זה באלי-אקספרס ←';
 }
 let current = null;
 function renderProduct(p){
   current = p;
   const tested = p.tier === 'tested';
   const items = galleryItems(p);
-  const marketName = p.marketplace === 'amazon' ? 'אמזון' : 'עלי-אקספרס';
+  const marketName = isAmazon(p) ? 'אמזון' : 'עלי-אקספרס';
 
   // מחיר + חיסכון
   let saveChip = '', wasLine = '';
@@ -361,7 +369,7 @@ function renderProduct(p){
   const buyCard = p.price_approx ? `
     <div class="buy">
       <div class="row1"><span class="now">₪${Math.round(p.price_approx)}</span>${wasLine}${saveChip}</div>
-      <div class="sub">מחיר משוער ב${marketName} · המחיר הסופי והמשלוח באתר המקור</div>
+      <div class="sub">מחיר משוער ב${marketName}${fmtDay(p.price_checked_at) ? ' · נבדק ב-' + fmtDay(p.price_checked_at) : ''} · המחיר הסופי והמשלוח באתר המקור · ייתכן מע"מ ביבוא</div>
     </div>` : '';
 
   // מבחן השטח (רק נבדק עם ציונים)
@@ -386,18 +394,18 @@ function renderProduct(p){
 
   const related = PRODUCTS.filter(x => x.id !== p.id && x.category === p.category).slice(0, 4);
   const relBlock = related.length ? `
-    <h3 class="sec">עוד כלים שעברו את המבחן</h3>
+    <h2 class="sec">עוד כלים באתר</h2>
     <div class="rel">${related.map(r => {
       const img = cardImg(r);
       const tag = r.tier === 'tested' ? '<span class="tg">נבדק ✓</span>' : '<span class="tg c">בבדיקה עכשיו</span>';
-      return `<a class="rc" href="#p/${esc(r.id)}"><div class="im">${tag}${img ? `<img src="${esc(img)}" alt="">` : 'אין תמונה'}</div><div class="b"><div class="t">${esc(r.title)}</div>${r.price_approx ? `<div class="p">₪${Math.round(r.price_approx)}</div>` : ''}</div></a>`;
+      return `<a class="rc" href="#p/${esc(r.id)}"><div class="im">${tag}${img ? `<img src="${esc(img)}" alt="${esc(r.title)}" referrerpolicy="no-referrer">` : 'אין תמונה'}</div><div class="b"><div class="t">${esc(r.title)}</div>${r.price_approx ? `<div class="p">₪${Math.round(r.price_approx)}</div>` : ''}</div></a>`;
     }).join('')}</div>` : '';
 
-  const thumbs = items.length > 1 ? `<div class="thumbs" id="thumbs">${items.map((it, i) => `<button type="button" class="th${it.type === 'video' ? ' vid' : ''}${i === 0 ? ' on' : ''}" data-i="${i}">${it.type === 'image' ? `<img src="${esc(it.src)}" alt="">` : ''}</button>`).join('')}</div>` : '';
+  const thumbs = items.length > 1 ? `<div class="thumbs" id="thumbs">${items.map((it, i) => `<button type="button" class="th${it.type === 'video' ? ' vid' : ''}${i === 0 ? ' on' : ''}" data-i="${i}" aria-label="תמונה ${i + 1}">${it.type === 'image' ? `<img src="${esc(it.src)}" alt="" referrerpolicy="no-referrer">` : ''}</button>`).join('')}</div>` : '';
 
-  const ctaHtml = `<div class="cta"><button type="button" id="cta-btn">${esc(ctaText(p))}</button><div class="sub">נפתח באתר המקור · קישור-שותפים, אני מקבל עמלה קטנה</div></div>`;
+  const ctaHtml = `<div class="cta"><button type="button" id="cta-btn">${esc(ctaText(p))}</button><div class="sub">${isAmazon(p) ? 'נפתח באמזון · קישור-שותפים: כשותף של אמזון אני מרוויח מרכישות מזכות' : 'נפתח באתר המקור · קישור-שותפים, אני מקבל עמלה קטנה'}</div></div>`;
   el('app').innerHTML = `
-    <div class="phone">
+    <main class="phone">
       ${brandHeader(true)}
       <div class="pcols">
         <div class="pmedia">
@@ -421,8 +429,8 @@ function renderProduct(p){
         </div>
       </div>
       ${relBlock}
-      <div class="disc">גילוי נאות: הקישורים באתר הם קישורי-שותפים — אם קונים דרכם, אני מקבל עמלה קטנה. זה לא עולה לכם שקל, וזה מה שמחזיק את האתר. אני ממליץ רק על מה שבדקתי בעצמי או שנראה לי שווה בדיקה.</div>
-    </div>`;
+      <div class="disc">גילוי נאות: הקישורים באתר הם קישורי-שותפים — אם קונים דרכם, אני מקבל עמלה קטנה. זה לא עולה לכם שקל, וזה מה שמחזיק את האתר. אני ממליץ רק על מה שבדקתי בעצמי או שנראה לי שווה בדיקה.${AMZ_LINE}</div>
+    </main>`;
 
   el('go-home').addEventListener('click', () => { location.hash = ''; });
   setHero(items, 0);
@@ -438,7 +446,7 @@ function setHero(items, idx){
   const it = items[idx];
   main.innerHTML = it.type === 'video'
     ? `<video src="${esc(it.src)}" controls playsinline></video>`
-    : `<img src="${esc(it.src)}" alt="">`;
+    : `<img src="${esc(it.src)}" alt="${esc(current ? current.title : '')}" referrerpolicy="no-referrer">`;
   credit.style.display = (it.mine && it.type === 'image') ? '' : 'none';
 }
 function wireCta(p){
